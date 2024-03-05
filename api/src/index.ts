@@ -1,36 +1,26 @@
-import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import WebSocket, { WebSocketServer } from "ws";
-import * as http from "http";
+import { api_server, http_server, ws_server } from "./servers";
 import { API_PORT, WSS_PORT } from "./constants";
+import { postMessage } from "./Message/postMessage";
 
-const app = express();
-const server = http.createServer();
-const wsServer = new WebSocketServer({ server });
+api_server.use(cors());
+api_server.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
+/*
+ * API routes
+ */
+api_server.post("/messages", postMessage);
 
-app.post("/messages", (req, res) => {
-  wsServer.clients.forEach(function each(client) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(req.body.content);
-    }
-  });
-
-  res.status(200).send();
-});
-
-app.listen(API_PORT, () => {
+api_server.listen(API_PORT, () => {
   console.log(`Server is running on port ${API_PORT}`);
 });
 
-server.listen(WSS_PORT, () => {
+http_server.listen(WSS_PORT, () => {
   console.log(`WebSocket server is running on port ${WSS_PORT}`);
 });
 
-wsServer.on("connection", (ws, req) => {
+ws_server.on("connection", (ws, req) => {
   console.log("Client connected", req.url);
 
   ws.on("close", () => console.log("Client disconnected"));
