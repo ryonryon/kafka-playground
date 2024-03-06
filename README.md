@@ -1,3 +1,11 @@
+## Requirements
+
+- As a user, I want to see the list of groups and users. So that I can start a chat with them.
+- As a user, I want to know who is online, so that I can see who is available to chat.
+- As a user, I want to see the historical messages, so that I can see the previous messages that I have received.
+- As a user, I want to send a message to another user or a group of users, so that I can communicate with them.
+- As a user, I want to see the messages that I have received in real-time manner, so that I can read them as soon as they are sent.
+
 ## Sending Message Flow
 
 ![Alt text](./images/MessageFlow.png)
