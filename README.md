@@ -16,6 +16,7 @@
 - [User](#user)
 - [Group](#group)
 - [Message](#message)
+- [ActiveUser](#activeuser)
 
 ### User
 
@@ -56,3 +57,21 @@
 | Field   | Type   | Description                    |
 | ------- | ------ | ------------------------------ |
 | user_id | String | Unique identifier for the user |
+
+## How to run the application
+
+#### Backend side
+
+Run kafka
+
+```bash
+export HOST_IP=$(ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | awk '{ print $2 }' | cut -f2 -d: | head -n1)
+docker-compose up
+```
+
+Run the backend
+
+```bash
+npm install
+npm run start
+```

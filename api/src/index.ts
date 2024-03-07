@@ -6,8 +6,15 @@ import { login } from "./Auth/login";
 import { getChats } from "./Chat/getChats";
 import { getMessages } from "./Message/getMessages";
 import { postMessage } from "./Message/postMessage";
-import { API_PORT, WSS_PORT } from "./constants";
+import {
+  API_PORT,
+  KAFKA_CLIENT_ID,
+  KAFKA_PORT,
+  KAFKA_TOPIC,
+  WSS_PORT,
+} from "./constants";
 import { api_server, http_server, ws_server } from "./servers";
+import { kafka } from "./kafka";
 
 api_server.use(cors());
 api_server.use(bodyParser.urlencoded({ extended: true }));
@@ -29,8 +36,26 @@ http_server.listen(WSS_PORT, () => {
   console.log(`WebSocket server is running on port ${WSS_PORT}`);
 });
 
-ws_server.on("connection", (ws, req) => {
+const consumer = kafka.consumer({ groupId: "test-group" });
+ws_server.on("connection", async (ws, req) => {
   console.log("Client connected", req.url);
+  await consumer.connect();
+  await consumer.subscribe({ topic: KAFKA_TOPIC, fromBeginning: false });
 
-  ws.on("close", () => console.log("Client disconnected"));
+  await consumer.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      ws.send(
+        JSON.stringify({
+          topic,
+          partition,
+          key: message.key.toString(),
+          value: message.value.toString(),
+        })
+      );
+    },
+  });
+
+  ws.on("close", () => {
+    console.log("Client disconnected");
+  });
 });

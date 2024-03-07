@@ -1,7 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import WebSocket from "ws";
-import { ws_server } from "../servers";
+import { KAFKA_TOPIC } from "../constants";
+import { kafka } from "../kafka";
+
+const producer = kafka.producer();
 
 const prisma = new PrismaClient();
 export async function postMessage(
@@ -50,11 +52,27 @@ export async function postMessage(
     },
   });
 
-  // ws_server.clients.forEach(function each(client) {
-  //   if (client.readyState === WebSocket.OPEN) {
-  //     client.send(content);
-  //   }
-  // });
+  await producer.connect();
+
+  await producer.send({
+    topic: KAFKA_TOPIC,
+    messages: [
+      {
+        key: String(group_id),
+        value: JSON.stringify({
+          type: "message",
+          message: {
+            message_id: message.message_id,
+            content: message.content,
+            created_at: message.created_at,
+            user_id: message.sender_id,
+          },
+        }),
+      },
+    ],
+  });
+
+  await producer.disconnect();
 
   res.status(200).send({
     message,
