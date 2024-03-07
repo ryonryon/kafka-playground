@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id     Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  password    String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  GroupMember GroupMember[]
+  Message     Message[]
+  ActiveUser  ActiveUser?
+}
+
+model Group {
+  group_id    Int      @id @default(autoincrement())
+  name        String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  GroupMember GroupMember[]
+  Message     Message[]
+}
+
+model GroupMember {
+  group_member_id Int      @id @default(autoincrement())
+  member_id       Int
+  group_id        Int
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  Member          User     @relation(fields: [member_id], references: [user_id])
+  Group           Group    @relation(fields: [group_id], references: [group_id])
+}
+
+model Message {
+  message_id Int      @id @default(autoincrement())
+  sender_id    Int
+  group_id   Int
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  User       User     @relation(fields: [sender_id], references: [user_id])
+  Group      Group    @relation(fields: [group_id], references: [group_id])
+}
+
+model ActiveUser {
+  active_user_id Int      @id @default(autoincrement())
+  user_id        Int      @unique
+  User           User     @relation(fields: [user_id], references: [user_id])
+}
